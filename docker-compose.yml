@@ -1,0 +1,164 @@
+name: iiot-stack
+ 
+services:
+  historian:
+    image: timebase/historian:latest
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 4096m
+    hostname: historian
+    container_name: historian
+    ports:
+      - "4511:4511"
+      - "4512:4512"
+    restart: unless-stopped
+    volumes:
+      - historian:/historian
+    environment:
+      - Settings=/historian/settings
+      - Data=/historian/data
+      - Logs=/historian/logs
+
+  explorer:
+    image: timebase/explorer:latest
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 2048m
+    hostname: explorer
+    container_name: explorer
+    ports:
+      - "4531:4531"
+      - "4532:4532"
+    restart: unless-stopped
+    volumes:
+      - explorer:/explorer
+    environment:
+      - Settings=/explorer/settings
+      - Config=/explorer/config
+      - Data=/explorer/data
+      - Logs=/explorer/logs
+ 
+  simulator:
+    image: timebase/collector:latest
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 2048m
+    hostname: simulator
+    container_name: simulator
+    ports:
+      - "4521:4521"
+      - "4522:4522"
+    restart: unless-stopped
+    volumes:
+     - simulator:/simulator
+    environment:
+      - Active=false
+      - Settings=/simulator/settings
+      - Config=/simulator/config
+      - Data=/simulator/data
+      - Logs=/simulator/logs
+
+  ignition:
+    image: inductiveautomation/ignition:latest
+    hostname: ignition
+    container_name: ignition
+    ports:
+      - 8088:8088
+      - 8043:8043
+      - 8060:8060
+      - 62541:62541
+    volumes:
+      - ignition:/usr/local/bin/ignition/data
+    # env_file: ignition.env  # optionally specify variables in a file, or using `environment:` below
+    environment:
+      - ACCEPT_IGNITION_EULA=Y
+      - GATEWAY_ADMIN_USERNAME=admin
+      - GATEWAY_ADMIN_PASSWORD=password
+      - IGNITION_EDITION=standard
+      - TZ=America/New_York  # see https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List
+    command: >
+      -n ignition
+      -m 1024
+      --
+      wrapper.java.maxmemory=4096
+      wrapper.java.initmemory=512
+      -Dignition.allowunsignedmodules=true
+    restart: unless-stopped
+
+
+  hivemq:
+    image: hivemq/hivemq4:latest
+    hostname: hivemq
+    container_name: hivemq
+    ports:
+      - "8080:8080"  # Web UI
+      - "8000:8000"  # WebSocket MQTT
+      - "1883:1883"  # MQTT broker
+    ulimits:
+      nofile:
+        soft: 500000
+        hard: 500000
+    volumes:
+      - hivemq:/opt/hivemq/data  # Persistent storage for HiveMQ
+    restart: unless-stopped
+
+
+  node-red:
+    image: nodered/node-red
+    hostname: node-red
+    container_name: node-red
+    ports:
+      - "1880:1880"  # Node-RED Web UI
+    depends_on:
+      - hivemq
+    volumes:
+      - node_red:/data  # Persistent storage for Node-RED flows
+    restart: unless-stopped
+
+
+  postgres:
+    image: postgres:latest
+    hostname: postgres
+    container_name: postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: my_database
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres:/var/lib/postgresql/data  # Persistent storage
+    restart: unless-stopped
+
+
+  pgadmin:
+    image: dpage/pgadmin4
+    hostname: pgadmin
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: adminpassword
+    ports:
+      - "5080:80"  # Access pgAdmin at http://localhost:5080
+    depends_on:
+      - postgres
+    volumes:
+      - pgadmin:/var/lib/pgadmin  # Persistent storage for pgAdmin
+    restart: unless-stopped
+
+
+volumes:
+  historian:
+  explorer:
+  simulator:
+  ignition:
+  hivemq:
+  node_red:
+  postgres:
+  pgadmin:
