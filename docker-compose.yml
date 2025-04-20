@@ -16,7 +16,7 @@ services:
     restart: unless-stopped
     volumes:
       - historian:/historian
-      - ./historian/settings:/historian/settings
+      - ./historian:/historian/settings
     environment:
       - Settings=/historian/settings
       - Data=/historian/data
@@ -37,7 +37,7 @@ services:
     restart: unless-stopped
     volumes:
       - explorer:/explorer
-      - ./explorer/config/sources.config:/explorer/config/sources.config
+      - ./explorer/sources.config:/explorer/config/sources.config
     environment:
       - Settings=/explorer/settings
       - Config=/explorer/config
@@ -59,7 +59,7 @@ services:
     restart: unless-stopped
     volumes:
       - simulator:/simulator
-      - ./simulator/config:/simulator/config
+      - ./simulator:/simulator/config
     environment:
       - Active=false
       - Settings=/simulator/settings
