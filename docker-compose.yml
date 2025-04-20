@@ -1,72 +1,156 @@
 name: iiot-stack
 
 services:
-  historian:
+  # Timebase Historian
+  # This is the main data storage and processing engine
+  timebase-historian:
     image: timebase/historian:latest
     deploy:
       resources:
         limits:
           cpus: "1"
           memory: 4096m
-    hostname: historian
-    container_name: historian
+    hostname: timebase-historian
+    container_name: timebase-historian
     ports:
       - "4511:4511"
       - "4512:4512"
     restart: unless-stopped
     volumes:
-      - historian:/historian
-      - ./historian:/historian/settings
+      - timebase-historian:/historian
+      - ./timebase/historian:/historian/settings
     environment:
       - Settings=/historian/settings
       - Data=/historian/data
       - Logs=/historian/logs
 
-  explorer:
+  # Timebase Explorer
+  # This is the web-based UI for Timebase
+  timebase-explorer:
     image: timebase/explorer:latest
     deploy:
       resources:
         limits:
           cpus: "1"
           memory: 2048m
-    hostname: explorer
-    container_name: explorer
+    hostname: timebase-explorer
+    container_name: timebase-explorer
     ports:
       - "4531:4531"
       - "4532:4532"
     restart: unless-stopped
     volumes:
-      - explorer:/explorer
-      - ./explorer/sources.config:/explorer/config/sources.config
+      - timebase-explorer:/explorer
+      - ./timebase/explorer/sources.config:/explorer/config/sources.config
     environment:
       - Settings=/explorer/settings
       - Config=/explorer/config
       - Data=/explorer/data
       - Logs=/explorer/logs
 
-  simulator:
+  # OPC UA Collector
+  # This is a collector that connects to OPC UA servers
+  timebase-collector-opcua:
     image: timebase/collector:latest
     deploy:
       resources:
         limits:
           cpus: "1"
           memory: 2048m
-    hostname: simulator
-    container_name: simulator
+    hostname: timebase-collector-opcua
+    container_name: timebase-collector-opcua
     ports:
       - "4521:4521"
       - "4522:4522"
     restart: unless-stopped
     volumes:
-      - simulator:/simulator
-      - ./simulator:/simulator/config
+      - timebase-collector-opcua:/collector
+      - ./timebase/collector/opcua:/collector/config
     environment:
       - Active=false
-      - Settings=/simulator/settings
-      - Config=/simulator/config
-      - Data=/simulator/data
-      - Logs=/simulator/logs
+      - Settings=/collector/settings
+      - Config=/collector/config
+      - Data=/collector/data
+      - Logs=/collector/logs
 
+  # MQTT Collector
+  # This is a collector that connects to MQTT brokers
+  timebase-collector-mqtt:
+    image: timebase/collector:latest
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 2048m
+    hostname: timebase-collector-mqtt
+    container_name: timebase-collector-mqtt
+    ports:
+      - "4523:4521"
+      - "4524:4522"
+    restart: unless-stopped
+    volumes:
+      - timebase-collector-mqtt:/collector
+      - ./timebase/collector/mqtt:/collector/config
+    environment:
+      - Active=false
+      - Settings=/collector/settings
+      - Config=/collector/config
+      - Data=/collector/data
+      - Logs=/collector/logs
+
+  # Sparkplug B Collector
+  # This is a collector that connects to Sparkplug B brokers
+  timebase-collector-sparkplugb:
+    image: timebase/collector:latest
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 2048m
+    hostname: timebase-collector-sparkplugb
+    container_name: timebase-collector-sparkplugb
+    ports:
+      - "4525:4521"
+      - "4526:4522"
+    restart: unless-stopped
+    volumes:
+      - timebase-collector-sparkplugb:/collector
+      - ./timebase/collector/sparkplugb:/collector/config
+    environment:
+      - Active=false
+      - Settings=/collector/settings
+      - Config=/collector/config
+      - Data=/collector/data
+      - Logs=/collector/logs
+
+  # Simulator Collector
+  # This is a collector that simulates data sources
+  timebase-collector-simulator:
+    image: timebase/collector:latest
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 2048m
+    hostname: timebase-collector-simulator
+    container_name: timebase-collector-simulator
+    ports:
+      - "4527:4521"
+      - "4528:4522"
+    restart: unless-stopped
+    volumes:
+      - timebase-collector-simulator:/collector
+      - ./timebase/collector/simulator:/collector/config
+    environment:
+      - Active=false
+      - Settings=/collector/settings
+      - Config=/collector/config
+      - Data=/collector/data
+      - Logs=/collector/logs
+
+  # Ignition
+  # This is the main Ignition server
+  # It is used for SCADA and HMI applications
   ignition:
     image: inductiveautomation/ignition:latest
     hostname: ignition
@@ -89,6 +173,8 @@ services:
       -n ignition -m 1024 -- wrapper.java.maxmemory=4096 wrapper.java.initmemory=512 -Dignition.allowunsignedmodules=true
     restart: unless-stopped
 
+  # HiveMQ
+  # This is an MQTT broker
   hivemq:
     image: hivemq/hivemq4:latest
     hostname: hivemq
@@ -105,6 +191,9 @@ services:
       - hivemq:/opt/hivemq/data # Persistent storage for HiveMQ
     restart: unless-stopped
 
+  # Node-RED
+  # This is a flow-based programming tool for IoT
+  # It is used for wiring together hardware devices, APIs, and online services
   node-red:
     image: nodered/node-red
     hostname: node-red
@@ -117,6 +206,9 @@ services:
       - node_red:/data # Persistent storage for Node-RED flows
     restart: unless-stopped
 
+  # PostgreSQL
+  # This is a relational database used for storing data
+  # It is used for storing historical data and other structured data
   postgres:
     image: postgres:latest
     hostname: postgres
@@ -131,6 +223,9 @@ services:
       - postgres:/var/lib/postgresql/data # Persistent storage
     restart: unless-stopped
 
+  # pgAdmin
+  # This is a web-based database management tool for PostgreSQL
+  # It is used for managing PostgreSQL databases
   pgadmin:
     image: dpage/pgadmin4
     hostname: pgadmin
@@ -149,9 +244,12 @@ services:
     restart: unless-stopped
 
 volumes:
-  historian:
-  explorer:
-  simulator:
+  timebase-historian:
+  timebase-explorer:
+  timebase-collector-opcua:
+  timebase-collector-mqtt:
+  timebase-collector-sparkplugb:
+  timebase-collector-simulator:
   ignition:
   hivemq:
   node_red:
