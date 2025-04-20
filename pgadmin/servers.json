@@ -1,11 +1,11 @@
 {
     "Servers": {
       "1": {
-        "Name": "Local PostgreSQL",
+        "Name": "Postgres IIoT",
         "Group": "Servers",
         "Host": "postgres",
         "Port": 5432,
-        "MaintenanceDB": "postgres",
+        "MaintenanceDB": "iiot_data",
         "Username": "admin",
         "PassFile": "/pgadmin4/.pgpass",
         "SSLMode": "prefer"

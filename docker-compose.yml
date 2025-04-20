@@ -1,5 +1,5 @@
 name: iiot-stack
- 
+
 services:
   historian:
     image: timebase/historian:latest
@@ -16,6 +16,7 @@ services:
     restart: unless-stopped
     volumes:
       - historian:/historian
+      - ./historian/settings:/historian/settings
     environment:
       - Settings=/historian/settings
       - Data=/historian/data
@@ -36,12 +37,13 @@ services:
     restart: unless-stopped
     volumes:
       - explorer:/explorer
+      - ./explorer/config/sources.config:/explorer/config/sources.config
     environment:
       - Settings=/explorer/settings
       - Config=/explorer/config
       - Data=/explorer/data
       - Logs=/explorer/logs
- 
+
   simulator:
     image: timebase/collector:latest
     deploy:
@@ -56,7 +58,8 @@ services:
       - "4522:4522"
     restart: unless-stopped
     volumes:
-     - simulator:/simulator
+      - simulator:/simulator
+      - ./simulator/config:/simulator/config
     environment:
       - Active=false
       - Settings=/simulator/settings
@@ -81,46 +84,38 @@ services:
       - GATEWAY_ADMIN_USERNAME=admin
       - GATEWAY_ADMIN_PASSWORD=password
       - IGNITION_EDITION=standard
-      - TZ=America/New_York  # see https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List
+      - TZ=America/New_York # see https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List
     command: >
-      -n ignition
-      -m 1024
-      --
-      wrapper.java.maxmemory=4096
-      wrapper.java.initmemory=512
-      -Dignition.allowunsignedmodules=true
+      -n ignition -m 1024 -- wrapper.java.maxmemory=4096 wrapper.java.initmemory=512 -Dignition.allowunsignedmodules=true
     restart: unless-stopped
-
 
   hivemq:
     image: hivemq/hivemq4:latest
     hostname: hivemq
     container_name: hivemq
     ports:
-      - "8080:8080"  # Web UI
-      - "8000:8000"  # WebSocket MQTT
-      - "1883:1883"  # MQTT broker
+      - "8080:8080" # Web UI
+      - "8000:8000" # WebSocket MQTT
+      - "1883:1883" # MQTT broker
     ulimits:
       nofile:
         soft: 500000
         hard: 500000
     volumes:
-      - hivemq:/opt/hivemq/data  # Persistent storage for HiveMQ
+      - hivemq:/opt/hivemq/data # Persistent storage for HiveMQ
     restart: unless-stopped
-
 
   node-red:
     image: nodered/node-red
     hostname: node-red
     container_name: node-red
     ports:
-      - "1880:1880"  # Node-RED Web UI
+      - "1880:1880" # Node-RED Web UI
     depends_on:
       - hivemq
     volumes:
-      - node_red:/data  # Persistent storage for Node-RED flows
+      - node_red:/data # Persistent storage for Node-RED flows
     restart: unless-stopped
-
 
   postgres:
     image: postgres:latest
@@ -129,13 +124,12 @@ services:
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: my_database
+      POSTGRES_DB: iiot_data
     ports:
       - "5432:5432"
     volumes:
-      - postgres:/var/lib/postgresql/data  # Persistent storage
+      - postgres:/var/lib/postgresql/data # Persistent storage
     restart: unless-stopped
-
 
   pgadmin:
     image: dpage/pgadmin4
@@ -145,15 +139,14 @@ services:
       PGADMIN_DEFAULT_EMAIL: admin@pgadmin.com
       PGADMIN_DEFAULT_PASSWORD: securepassword123
     ports:
-      - "5080:80"  # Access pgAdmin at http://localhost:5080
+      - "5080:80" # Access pgAdmin at http://localhost:5080
     depends_on:
       - postgres
     volumes:
-      - pgadmin:/var/lib/pgadmin  # Persistent storage for pgAdmin
-      - ./pgadmin/servers.json:/pgadmin4/servers.json  # Predefined server connections
-      - ./pgadmin/pgpass:/var/lib/pgadmin/.pgpass ## Predefined password file for pgAdmin
+      - pgadmin:/var/lib/pgadmin # Persistent storage for pgAdmin
+      - ./pgadmin/servers.json:/pgadmin4/servers.json # Predefined server connections
+      - ./pgadmin/pgpass:/var/lib/pgadmin/.pgpass # Predefined password file for pgAdmin
     restart: unless-stopped
-
 
 volumes:
   historian:

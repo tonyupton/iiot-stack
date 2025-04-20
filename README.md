@@ -30,7 +30,12 @@ This project aims to:
 1. Clone this repository. [GiHub](https://github.com/tonyupton/iiot-stack):
     ```bash
     git clone https://github.com/tonyupton/iiot-stack.git
+    ```
+
+2. Make shell scripts executable.
+    ```bash
     cd iiot-stack
+    sudo chmod +x *.sh
     ```
 
 2. Install Docker. [Docker Docs](https://docs.docker.com/engine/install/ubuntu/):
