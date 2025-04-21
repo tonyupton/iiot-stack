@@ -53,6 +53,5 @@ fi
 # Verify the installation
 echo "Verifying Docker installation..."
 docker --version
-docker-compose --version
 
 echo "Docker installation complete!"
