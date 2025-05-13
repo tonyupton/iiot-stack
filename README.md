@@ -27,7 +27,7 @@ This project aims to:
 
 ## Installation
 
-1. Clone this repository. [GiHub](https://github.com/tonyupton/iiot-stack):
+1. Clone this repository from [GitHub](https://github.com/tonyupton/iiot-stack):
     ```bash
     git clone https://github.com/tonyupton/iiot-stack.git
     ```
@@ -38,15 +38,20 @@ This project aims to:
     sudo chmod +x *.sh
     ```
 
-2. Install Docker. [Docker Docs](https://docs.docker.com/engine/install/ubuntu/):
+3. Install Docker. [Docker Docs](https://docs.docker.com/engine/install/ubuntu/):
 
    ```bash
    ./install_docker.sh
    ```
 
-4. Deploy the IIoT services:
+4. Restart machine.
     ```bash
-    sudo docker-compose up -d
+    sudo reboot
+    ```
+
+5. Deploy the IIoT services:
+    ```bash
+    docker compose up -d
     ```
 
 ## Usage
